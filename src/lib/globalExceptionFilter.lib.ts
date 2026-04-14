@@ -7,7 +7,7 @@ import { Response } from 'express';
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
-    console.error('[GlobalExceptionFilter]: ', exception.stack);
+    console.error('[GlobalExceptionFilter]: ', exception);
 
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -34,7 +34,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-      message: 'error',
+      message: 'Unknown internal server error occurred',
       error: {},
     });
   }

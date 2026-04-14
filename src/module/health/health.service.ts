@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 
-import { appConfig } from '../../config/appConfig.js';
+import { AppResponse } from '../../lib/appResponse.lib.js';
 
 @Injectable()
 export class HealthService {
-  async getHealth() {
-    return `health: ok, env: ${appConfig.app.APP_ENV}`;
+  async getHealth(): Promise<AppResponse> {
+    return { success: true, statusCode: HttpStatus.OK, message: 'API is healthy', data: {} };
   }
 }

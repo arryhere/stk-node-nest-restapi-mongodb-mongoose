@@ -1,22 +1,23 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import bcryptjs from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import { Model } from 'mongoose';
 
-import { appConfig } from '../../config/appConfig.js';
 import { AppException } from '../../lib/appException.lib.js';
 import { AppResponse } from '../../lib/appResponse.lib.js';
 import { EmailService } from '../../lib/emailService.lib.js';
 import { TokenModel, TokenType } from '../../model/token.model.js';
 import { UserModel } from '../../model/user.model.js';
+import { AuthJwtService } from './authJwt.service.js';
 import { DTO_SignupInput } from './dto/signup.input.js';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(UserModel.name) private userModel: Model<UserModel>,
-    @InjectModel(TokenModel.name) private tokenModel: Model<TokenModel>
+    @InjectModel(TokenModel.name) private tokenModel: Model<TokenModel>,
+
+    private readonly authJwtService: AuthJwtService
   ) {}
 
   async signup(signupInput: DTO_SignupInput): Promise<AppResponse> {
@@ -37,9 +38,7 @@ export class AuthService {
       phoneNumber: signupInput.phoneNumber,
     });
 
-    const verifyToken = jwt.sign({ id: newUser._id }, appConfig.jwt.JWT_VERIFY_TOKEN_SECRET, {
-      expiresIn: appConfig.tokenExpiration.VERIFY_TOKEN_EXPIRATION,
-    });
+    const verifyToken = await this.authJwtService.encodeVerifyToken({ id: newUser.id });
 
     await this.tokenModel.create({ user: newUser._id, token: verifyToken, tokenType: TokenType.VERIFY_TOKEN });
 

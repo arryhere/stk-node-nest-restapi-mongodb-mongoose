@@ -11,7 +11,16 @@ import { HealthModule } from './module/health/health.module.js';
 import { UserModule } from './module/user/user.module.js';
 
 @Module({
-  imports: [MongooseModule.forRoot(appConfig.mongodb.MONGODB_URI), UserModelModule, TokenModelModule, HealthModule, AuthModule, UserModule],
+  imports: [
+    MongooseModule.forRootAsync({ useFactory: () => ({ uri: appConfig.mongodb.MONGODB_URI }) }),
+
+    UserModelModule,
+    TokenModelModule,
+
+    HealthModule,
+    AuthModule,
+    UserModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
