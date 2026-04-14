@@ -22,6 +22,15 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       });
     }
 
+    if (exception.name === 'NotFoundException') {
+      return response.status(HttpStatus.NOT_FOUND).json({
+        success: false,
+        statusCode: HttpStatus.NOT_FOUND,
+        message: exception.message,
+        error: exception.getResponse().error,
+      });
+    }
+
     return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,

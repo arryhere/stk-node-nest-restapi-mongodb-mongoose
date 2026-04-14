@@ -57,7 +57,7 @@ Lets say there are **_HealthModule_**, **_AuthModule_** and **_UserModule_**
 It registers the module once globally for the entire app.<br>
 All `exported providers` from that module become available to all other modules without needing to re-import it.
 
-You must import a `@Global() module` exactly once — but it can be in `any module`, not just `AppModule`.
+You must import a `@Global() module` exactly once in `any module` — and it can be in `any module`, not just `AppModule`.
 
 ---
 

@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
+import { appConfig } from '../config/appConfig.js';
 import { UserModel } from './user.model.js';
 
 export enum TokenType {
@@ -23,7 +24,7 @@ export class TokenModel {
   @Prop({ type: String, enum: Object.values(TokenType), required: true })
   tokenType: TokenType;
 
-  @Prop({ type: Date, expires: '10m', default: Date.now })
+  @Prop({ type: Date, expires: appConfig.mongodb.TOKEN_MODEL_EXPIRATION, default: Date.now })
   issuedAt: Date;
 
   createdAt: Date; // auto generated as timestamps: true
