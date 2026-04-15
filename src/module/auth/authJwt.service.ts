@@ -1,7 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 import { appConfig } from '../../config/appConfig.js';
+import { AppException } from '../../lib/appException.lib.js';
+
+type IJwtPayload = {
+  id: string;
+  iat?: number;
+  exp?: number;
+};
 
 @Injectable()
 export class AuthJwtService {
@@ -9,57 +16,85 @@ export class AuthJwtService {
 
   // 🔐 VERIFY TOKEN
   async encodeVerifyToken(payload: { id: string }): Promise<string> {
-    return this.jwtService.signAsync(payload, {
+    return await this.jwtService.signAsync(payload, {
       secret: appConfig.jwt.JWT_VERIFY_TOKEN_SECRET,
       expiresIn: appConfig.tokenExpiration.VERIFY_TOKEN_EXPIRATION,
     });
   }
 
-  async decodeVerifyToken(token: string) {
-    return this.jwtService.verifyAsync(token, {
-      secret: appConfig.jwt.JWT_VERIFY_TOKEN_SECRET,
-    });
+  async decodeVerifyToken(token: string): Promise<IJwtPayload> {
+    try {
+      return await this.jwtService.verifyAsync(token, {
+        secret: appConfig.jwt.JWT_VERIFY_TOKEN_SECRET,
+      });
+    } catch (error) {
+      throw new AppException({ message: 'Invalid or expired token', error }, HttpStatus.UNAUTHORIZED, {
+        cause: error,
+        description: 'decodeVerifyToken',
+      });
+    }
   }
 
   // 🔑 ACCESS TOKEN
   async encodeAccessToken(payload: { id: string }): Promise<string> {
-    return this.jwtService.signAsync(payload, {
+    return await this.jwtService.signAsync(payload, {
       secret: appConfig.jwt.JWT_ACCESS_TOKEN_SECRET,
       expiresIn: appConfig.tokenExpiration.ACCESS_TOKEN_EXPIRATION,
     });
   }
 
-  async decodeAccessToken(token: string) {
-    return this.jwtService.verifyAsync(token, {
-      secret: appConfig.jwt.JWT_ACCESS_TOKEN_SECRET,
-    });
+  async decodeAccessToken(token: string): Promise<IJwtPayload> {
+    try {
+      return await this.jwtService.verifyAsync(token, {
+        secret: appConfig.jwt.JWT_ACCESS_TOKEN_SECRET,
+      });
+    } catch (error) {
+      throw new AppException({ message: 'Invalid or expired token', error }, HttpStatus.UNAUTHORIZED, {
+        cause: error,
+        description: 'decodeAccessToken',
+      });
+    }
   }
 
   // 🔄 REFRESH TOKEN
   async encodeRefreshToken(payload: { id: string }): Promise<string> {
-    return this.jwtService.signAsync(payload, {
+    return await this.jwtService.signAsync(payload, {
       secret: appConfig.jwt.JWT_REFRESH_TOKEN_SECRET,
       expiresIn: appConfig.tokenExpiration.REFRESH_TOKEN_EXPIRATION,
     });
   }
 
-  async decodeRefreshToken(token: string) {
-    return this.jwtService.verifyAsync(token, {
-      secret: appConfig.jwt.JWT_REFRESH_TOKEN_SECRET,
-    });
+  async decodeRefreshToken(token: string): Promise<IJwtPayload> {
+    try {
+      return await this.jwtService.verifyAsync(token, {
+        secret: appConfig.jwt.JWT_REFRESH_TOKEN_SECRET,
+      });
+    } catch (error) {
+      throw new AppException({ message: 'Invalid or expired token', error }, HttpStatus.UNAUTHORIZED, {
+        cause: error,
+        description: 'decodeRefreshToken',
+      });
+    }
   }
 
   // 🔑 FORGOT PASSWORD TOKEN
   async encodeForgotPasswordToken(payload: { id: string }): Promise<string> {
-    return this.jwtService.signAsync(payload, {
+    return await this.jwtService.signAsync(payload, {
       secret: appConfig.jwt.JWT_FORGOT_PASSWORD_TOKEN_SECRET,
       expiresIn: appConfig.tokenExpiration.FORGOT_PASSWORD_TOKEN_EXPIRATION,
     });
   }
 
   async decodeForgotPasswordToken(token: string) {
-    return this.jwtService.verifyAsync(token, {
-      secret: appConfig.jwt.JWT_FORGOT_PASSWORD_TOKEN_SECRET,
-    });
+    try {
+      return await this.jwtService.verifyAsync(token, {
+        secret: appConfig.jwt.JWT_FORGOT_PASSWORD_TOKEN_SECRET,
+      });
+    } catch (error) {
+      throw new AppException({ message: 'Invalid or expired token', error }, HttpStatus.UNAUTHORIZED, {
+        cause: error,
+        description: 'decodeForgotPasswordToken',
+      });
+    }
   }
 }

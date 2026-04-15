@@ -1,7 +1,9 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post } from '@nestjs/common';
 
 import { AuthService } from './auth.service.js';
-import { DTO_SignupInput } from './dto/signup.input.js';
+import { DtoSignupInput } from './dto/signup.input.dto.js';
+import { DtoVerifyInput } from './dto/verify.input.dto.js';
+import { DtoVerifyLinkInput } from './dto/verifyLink.input.dto.js';
 
 @Controller('auth')
 export class AuthController {
@@ -9,7 +11,19 @@ export class AuthController {
 
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
-  async signup(@Body() signupInput: DTO_SignupInput) {
-    return await this.authService.signup(signupInput);
+  async signup(@Body() dtoSignupInput: DtoSignupInput) {
+    return await this.authService.signup(dtoSignupInput);
+  }
+
+  @Get('verifyLink')
+  @HttpCode(HttpStatus.OK)
+  async verifyLink(@Body() dtoVerifyLinkInput: DtoVerifyLinkInput) {
+    return await this.authService.verifyLink(dtoVerifyLinkInput);
+  }
+
+  @Patch('verify')
+  @HttpCode(HttpStatus.OK)
+  async verify(@Body() dtoVerifyInput: DtoVerifyInput) {
+    return await this.authService.verify(dtoVerifyInput);
   }
 }

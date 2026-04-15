@@ -1,4 +1,4 @@
-# Node-Nest-Mongoose
+# STK-NODE-NEST-RESTAPI-MONGODB-MONGOOSE
 
 ---
 
@@ -10,14 +10,6 @@
 - `mongodb`
 - `mongoose`
 - `typescript`
-
----
-
-## App Init
-
-```
-npm i -g @nestjs/cli
-```
 
 ---
 

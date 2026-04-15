@@ -11,7 +11,6 @@ export const appConfig = {
     MONGO_INITDB_ROOT_USERNAME: env.get('MONGO_INITDB_ROOT_USERNAME').required().asString(),
     MONGO_INITDB_ROOT_PASSWORD: env.get('MONGO_INITDB_ROOT_PASSWORD').required().asString(),
     MONGODB_URI: env.get('MONGODB_URI').required().asString(),
-    TOKEN_MODEL_EXPIRATION: env.get('TOKEN_MODEL_EXPIRATION').required().asIntPositive(),
   },
 
   jwt: {

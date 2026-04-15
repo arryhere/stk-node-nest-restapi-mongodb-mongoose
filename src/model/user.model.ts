@@ -4,7 +4,6 @@ import { Types } from 'mongoose';
 
 export enum Role {
   ADMIN = 'ADMIN',
-  MODERATOR = 'MODERATOR',
   USER = 'USER',
 }
 
@@ -36,7 +35,7 @@ export class UserModel {
   @Prop({ type: Boolean, default: true })
   active: boolean;
 
-  @Prop({ type: String, enum: Object.values(Role), default: Role.ADMIN })
+  @Prop({ type: String, enum: Object.values(Role), default: Role.USER })
   role: Role;
 
   createdAt: Date; // auto generated as timestamps: true
