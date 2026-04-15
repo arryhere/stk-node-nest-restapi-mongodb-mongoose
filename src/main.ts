@@ -17,8 +17,8 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
       exceptionFactory: (errors) => {
-        const satitizedErrors= errors.map((err) => ({ field: err.property, constraints: Object.values(err.constraints || {}) }));
-        return new AppException({ message: 'Validation Failed', error: satitizedErrors}, HttpStatus.BAD_REQUEST, {
+        const satitizedErrors = errors.map((err) => ({ field: err.property, constraints: Object.values(err.constraints || {}) }));
+        return new AppException({ message: 'Validation Failed', error: satitizedErrors }, HttpStatus.BAD_REQUEST, {
           cause: errors,
           description: 'ValidationPipe',
         });

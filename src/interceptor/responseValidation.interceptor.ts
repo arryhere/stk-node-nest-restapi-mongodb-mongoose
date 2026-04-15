@@ -21,12 +21,12 @@ export class ResponseValidationInterceptor implements NestInterceptor {
         try {
           await validateOrReject(response);
         } catch (error: unknown) {
-          const satitizedErrors= (error as ValidationError[]).map((err) => ({
+          const satitizedErrors = (error as ValidationError[]).map((err) => ({
             field: err.property,
             constraints: Object.values(err.constraints || {}),
           }));
 
-          throw new AppException({ message: 'Invalid response shape', error: satitizedErrors}, HttpStatus.INTERNAL_SERVER_ERROR, {
+          throw new AppException({ message: 'Invalid response shape', error: satitizedErrors }, HttpStatus.INTERNAL_SERVER_ERROR, {
             cause: error,
             description: 'ResponseValidationInterceptor',
           });

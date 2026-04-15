@@ -8,7 +8,7 @@ import { AppException } from './appException.lib.js';
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
-    // console.error('[GlobalExceptionFilter]: ', exception);
+    console.error('[GlobalExceptionFilter]: ', exception);
 
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -24,7 +24,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     }
 
     if (exception instanceof NotFoundException) {
-      console.log(exception.getResponse())
       return response.status(HttpStatus.NOT_FOUND).json({
         success: false,
         statusCode: HttpStatus.NOT_FOUND,
