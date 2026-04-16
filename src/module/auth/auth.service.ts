@@ -6,11 +6,11 @@ import { Model, Types } from 'mongoose';
 
 import { appConfig } from '../../config/appConfig.js';
 import { AppException } from '../../exception/appException.exception.js';
-import { AppResponse } from '../../lib/appResponse.lib.js';
 import { EmailLibService } from '../../lib/email.lib.js';
 import { JwtLibService } from '../../lib/jwt.lib.js';
 import { TokenModel, TokenType } from '../../model/token.model.js';
 import { UserModel } from '../../model/user.model.js';
+import { TAppResponse } from '../../type/appResponse.type.js';
 import { SigninInputDto } from './dto/signin.input.dto.js';
 import { SignupInputDto } from './dto/signup.input.dto.js';
 import { VerifyInputDto } from './dto/verify.input.dto.js';
@@ -19,14 +19,14 @@ import { VerifyLinkInputDto } from './dto/verifyLink.input.dto.js';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(UserModel.name) private userModel: Model<UserModel>,
-    @InjectModel(TokenModel.name) private tokenModel: Model<TokenModel>,
+    @InjectModel(UserModel.name) private readonly userModel: Model<UserModel>,
+    @InjectModel(TokenModel.name) private readonly tokenModel: Model<TokenModel>,
 
-    private readonly emailLibService: EmailLibService,
-    private readonly jwtLibService: JwtLibService
+    private readonly jwtLibService: JwtLibService,
+    private readonly emailLibService: EmailLibService
   ) {}
 
-  async signup(signupInputDto: SignupInputDto): Promise<AppResponse> {
+  async signup(signupInputDto: SignupInputDto): Promise<TAppResponse> {
     const emailExist = await this.userModel.findOne({ email: signupInputDto.email });
     if (emailExist)
       throw new AppException({ message: 'Email already exist', error: {} }, HttpStatus.BAD_REQUEST, {
@@ -71,7 +71,7 @@ export class AuthService {
     };
   }
 
-  async verifyLink(verifyLinkInputDto: VerifyLinkInputDto): Promise<AppResponse> {
+  async verifyLink(verifyLinkInputDto: VerifyLinkInputDto): Promise<TAppResponse> {
     const user = await this.userModel.findOne({ email: verifyLinkInputDto.email });
 
     if (!user)
@@ -112,7 +112,7 @@ export class AuthService {
     };
   }
 
-  async verify(verifyInputDto: VerifyInputDto): Promise<AppResponse> {
+  async verify(verifyInputDto: VerifyInputDto): Promise<TAppResponse> {
     const verifyTokenDecoded = await this.jwtLibService.decodeVerifyToken(verifyInputDto.verifyToken);
 
     const matchExistingToken = await this.tokenModel.findOne({
@@ -145,7 +145,7 @@ export class AuthService {
     };
   }
 
-  async signin(signinInputDto: SigninInputDto): Promise<AppResponse> {
+  async signin(signinInputDto: SigninInputDto): Promise<TAppResponse> {
     const user = await this.userModel.findOne({ email: signinInputDto.email });
 
     if (!user) {

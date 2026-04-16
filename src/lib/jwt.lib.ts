@@ -4,7 +4,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { appConfig } from '../config/appConfig.js';
 import { AppException } from '../exception/appException.exception.js';
 
-type IJwtPayload = {
+type TJwtPayload = {
   id: string;
   iat?: number;
   exp?: number;
@@ -22,7 +22,7 @@ export class JwtLibService {
     });
   }
 
-  async decodeVerifyToken(token: string): Promise<IJwtPayload> {
+  async decodeVerifyToken(token: string): Promise<TJwtPayload> {
     try {
       return await this.jwtService.verifyAsync(token, {
         secret: appConfig.jwt.JWT_VERIFY_TOKEN_SECRET,
@@ -43,7 +43,7 @@ export class JwtLibService {
     });
   }
 
-  async decodeAccessToken(token: string): Promise<IJwtPayload> {
+  async decodeAccessToken(token: string): Promise<TJwtPayload> {
     try {
       return await this.jwtService.verifyAsync(token, {
         secret: appConfig.jwt.JWT_ACCESS_TOKEN_SECRET,
@@ -64,7 +64,7 @@ export class JwtLibService {
     });
   }
 
-  async decodeRefreshToken(token: string): Promise<IJwtPayload> {
+  async decodeRefreshToken(token: string): Promise<TJwtPayload> {
     try {
       return await this.jwtService.verifyAsync(token, {
         secret: appConfig.jwt.JWT_REFRESH_TOKEN_SECRET,
@@ -85,7 +85,7 @@ export class JwtLibService {
     });
   }
 
-  async decodeForgotPasswordToken(token: string) {
+  async decodeForgotPasswordToken(token: string): Promise<TJwtPayload> {
     try {
       return await this.jwtService.verifyAsync(token, {
         secret: appConfig.jwt.JWT_FORGOT_PASSWORD_TOKEN_SECRET,
