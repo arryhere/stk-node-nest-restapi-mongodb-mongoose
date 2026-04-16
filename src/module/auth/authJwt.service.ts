@@ -2,7 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 import { appConfig } from '../../config/appConfig.js';
-import { AppException } from '../../lib/appException.lib.js';
+import { AppException } from '../../exception/appException.exception.js';
 
 type IJwtPayload = {
   id: string;

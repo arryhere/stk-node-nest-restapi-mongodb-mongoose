@@ -4,7 +4,7 @@ import { plainToInstance } from 'class-transformer';
 import { validateOrReject, ValidationError } from 'class-validator';
 import { Observable, switchMap } from 'rxjs';
 
-import { AppException } from '../lib/appException.lib.js';
+import { AppException } from '../exception/appException.exception.js';
 import { AppResponse } from '../lib/appResponse.lib.js';
 
 @Injectable()

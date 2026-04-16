@@ -1,13 +1,12 @@
-import { HttpStatus } from '@nestjs/common';
+import { HttpStatus, Injectable, Module } from '@nestjs/common';
 import nodemailer from 'nodemailer';
 
 import { appConfig } from '../config/appConfig.js';
-import { AppException } from './appException.lib.js';
+import { AppException } from '../exception/appException.exception.js';
 
-export class EmailService {
-  public name = 'EmailService';
-
-  public static async sendEmail(subject: string, html: string, to_email: string): Promise<void> {
+@Injectable()
+export class EmailLibService {
+  async sendEmail(subject: string, html: string, to_email: string): Promise<void> {
     try {
       const mail_transport = nodemailer.createTransport({
         host: appConfig.smtp.SMTP_HOST,
@@ -16,7 +15,7 @@ export class EmailService {
       });
 
       const res = await mail_transport.sendMail({
-        from: appConfig.email.EMAIL_FROM,
+        from: `stk-node-nest-restapi-mongodb-mongoose <${appConfig.email.EMAIL_FROM}>`,
         to: to_email,
         replyTo: appConfig.email.EMAIL_FROM,
         subject: subject,
@@ -35,3 +34,11 @@ export class EmailService {
     }
   }
 }
+
+@Module({
+  imports: [],
+  controllers: [],
+  providers: [EmailLibService],
+  exports: [EmailLibService],
+})
+export class EmailLibModule {}

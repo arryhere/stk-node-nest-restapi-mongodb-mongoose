@@ -3,7 +3,7 @@ import { IsEmail, IsPhoneNumber, IsString, Length } from 'class-validator';
 
 import { IsDateFormat } from '../../../validation/customClassValidation/isDateFormat.js';
 
-export class DtoSignupInput {
+export class SignupInputDto {
   @IsString()
   @Length(1, 255, { message: 'firstName must be between 1 and 255 characters' })
   @Transform(({ value }: { value: string }) => value.trim())

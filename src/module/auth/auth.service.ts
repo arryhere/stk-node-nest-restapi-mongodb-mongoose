@@ -2,18 +2,19 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import bcryptjs from 'bcryptjs';
 import { addSeconds } from 'date-fns';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 import { appConfig } from '../../config/appConfig.js';
-import { AppException } from '../../lib/appException.lib.js';
+import { AppException } from '../../exception/appException.exception.js';
 import { AppResponse } from '../../lib/appResponse.lib.js';
-import { EmailService } from '../../lib/emailService.lib.js';
+import { EmailLibService } from '../../lib/email.lib.js';
 import { TokenModel, TokenType } from '../../model/token.model.js';
 import { UserModel } from '../../model/user.model.js';
 import { AuthJwtService } from './authJwt.service.js';
-import { DtoSignupInput } from './dto/signup.input.dto.js';
-import { DtoVerifyInput } from './dto/verify.input.dto.js';
-import { DtoVerifyLinkInput } from './dto/verifyLink.input.dto.js';
+import { SigninInputDto } from './dto/signin.input.dto.js';
+import { SignupInputDto } from './dto/signup.input.dto.js';
+import { VerifyInputDto } from './dto/verify.input.dto.js';
+import { VerifyLinkInputDto } from './dto/verifyLink.input.dto.js';
 
 @Injectable()
 export class AuthService {
@@ -21,33 +22,34 @@ export class AuthService {
     @InjectModel(UserModel.name) private userModel: Model<UserModel>,
     @InjectModel(TokenModel.name) private tokenModel: Model<TokenModel>,
 
+    private readonly emailLibService: EmailLibService,
     private readonly authJwtService: AuthJwtService
   ) {}
 
-  async signup(dtoSignupInput: DtoSignupInput): Promise<AppResponse> {
-    const emailExist = await this.userModel.findOne({ email: dtoSignupInput.email });
+  async signup(signupInputDto: SignupInputDto): Promise<AppResponse> {
+    const emailExist = await this.userModel.findOne({ email: signupInputDto.email });
     if (emailExist)
       throw new AppException({ message: 'Email already exist', error: {} }, HttpStatus.BAD_REQUEST, {
         cause: {},
         description: 'signup',
       });
 
-    const phoneExist = await this.userModel.findOne({ phoneNumber: dtoSignupInput.phoneNumber });
+    const phoneExist = await this.userModel.findOne({ phoneNumber: signupInputDto.phoneNumber });
     if (phoneExist)
       throw new AppException({ message: 'Phone number already exist', error: {} }, HttpStatus.BAD_REQUEST, {
         cause: {},
         description: 'signup',
       });
 
-    const passwordHash = await bcryptjs.hash(dtoSignupInput.password, 10);
+    const passwordHash = await bcryptjs.hash(signupInputDto.password, 10);
 
     const newUser = await this.userModel.create({
-      firstName: dtoSignupInput.firstName,
-      lastName: dtoSignupInput.lastName,
-      email: dtoSignupInput.email,
+      firstName: signupInputDto.firstName,
+      lastName: signupInputDto.lastName,
+      email: signupInputDto.email,
       passwordHash: passwordHash,
-      dob: dtoSignupInput.dob,
-      phoneNumber: dtoSignupInput.phoneNumber,
+      dob: signupInputDto.dob,
+      phoneNumber: signupInputDto.phoneNumber,
     });
 
     const verifyToken = await this.authJwtService.encodeVerifyToken({ id: newUser.id });
@@ -59,7 +61,7 @@ export class AuthService {
       expireAt: addSeconds(new Date(), appConfig.tokenExpiration.VERIFY_TOKEN_EXPIRATION),
     });
 
-    await EmailService.sendEmail('User Verification Link', `token: ${verifyToken}`, dtoSignupInput.email);
+    await this.emailLibService.sendEmail('User Verification Link', `token: ${verifyToken}`, signupInputDto.email);
 
     return {
       success: true,
@@ -69,13 +71,13 @@ export class AuthService {
     };
   }
 
-  async verifyLink(dtoVerifyLinkInput: DtoVerifyLinkInput): Promise<AppResponse> {
-    const user = await this.userModel.findOne({ email: dtoVerifyLinkInput.email });
+  async verifyLink(verifyLinkInputDto: VerifyLinkInputDto): Promise<AppResponse> {
+    const user = await this.userModel.findOne({ email: verifyLinkInputDto.email });
 
     if (!user)
       throw new AppException({ message: 'Invalid User', error: {} }, HttpStatus.BAD_REQUEST, { cause: {}, description: 'verifyLink' });
 
-    const passwordCompare = await bcryptjs.compare(dtoVerifyLinkInput.password, user.passwordHash);
+    const passwordCompare = await bcryptjs.compare(verifyLinkInputDto.password, user.passwordHash);
 
     if (!passwordCompare) {
       throw new AppException({ message: 'Invalid Credentials', error: {} }, HttpStatus.BAD_REQUEST, {
@@ -100,7 +102,7 @@ export class AuthService {
       { upsert: true }
     );
 
-    await EmailService.sendEmail('User Verification Link', `token: ${verifyToken}`, user.email);
+    await this.emailLibService.sendEmail('User Verification Link', `token: ${verifyToken}`, user.email);
 
     return {
       success: true,
@@ -110,12 +112,12 @@ export class AuthService {
     };
   }
 
-  async verify(dtoVerifyInput: DtoVerifyInput): Promise<AppResponse> {
-    const verifyTokenDecoded = await this.authJwtService.decodeVerifyToken(dtoVerifyInput.verifyToken);
+  async verify(verifyInputDto: VerifyInputDto): Promise<AppResponse> {
+    const verifyTokenDecoded = await this.authJwtService.decodeVerifyToken(verifyInputDto.verifyToken);
 
     const matchExistingToken = await this.tokenModel.findOne({
-      user: verifyTokenDecoded.id,
-      token: dtoVerifyInput.verifyToken,
+      user: new Types.ObjectId(verifyTokenDecoded.id),
+      token: verifyInputDto.verifyToken,
       tokenType: TokenType.VERIFY_TOKEN,
     });
 
@@ -140,6 +142,50 @@ export class AuthService {
       message: 'Verification successful',
       statusCode: HttpStatus.OK,
       data: {},
+    };
+  }
+
+  async signin(signinInputDto: SigninInputDto): Promise<AppResponse> {
+    const user = await this.userModel.findOne({ email: signinInputDto.email });
+
+    if (!user) {
+      throw new AppException({ message: 'Invalid Credentials', error: {} }, HttpStatus.BAD_REQUEST, {
+        cause: {},
+        description: 'signin',
+      });
+    }
+
+    if (!user.verified) {
+      throw new AppException({ message: 'User Unverified', error: {} }, HttpStatus.FORBIDDEN, {
+        cause: {},
+        description: 'signin',
+      });
+    }
+
+    if (!user.active) {
+      throw new AppException({ message: 'User Inactive', error: {} }, HttpStatus.FORBIDDEN, {
+        cause: {},
+        description: 'signin',
+      });
+    }
+
+    const passwordCompare = await bcryptjs.compare(signinInputDto.password, user.passwordHash);
+
+    if (!passwordCompare) {
+      throw new AppException({ message: 'Invalid Credentials', error: {} }, HttpStatus.BAD_REQUEST, {
+        cause: {},
+        description: 'signin',
+      });
+    }
+
+    const accessToken = await this.authJwtService.encodeAccessToken({ id: user.id });
+    const refreshToken = await this.authJwtService.encodeRefreshToken({ id: user.id });
+
+    return {
+      success: true,
+      message: 'Signin successful',
+      statusCode: HttpStatus.OK,
+      data: { id: user.id, accessToken, refreshToken },
     };
   }
 }

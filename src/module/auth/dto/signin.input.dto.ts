@@ -1,7 +1,7 @@
 import { Transform } from 'class-transformer';
 import { IsEmail, IsString, Length } from 'class-validator';
 
-export class VerifyLinkInputDto {
+export class SigninInputDto {
   @IsEmail({}, { message: 'Invalid email address' })
   email: string;
 
