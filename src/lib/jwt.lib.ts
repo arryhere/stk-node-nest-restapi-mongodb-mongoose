@@ -1,8 +1,8 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { HttpStatus, Injectable, Module } from '@nestjs/common';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 
-import { appConfig } from '../../config/appConfig.js';
-import { AppException } from '../../exception/appException.exception.js';
+import { appConfig } from '../config/appConfig.js';
+import { AppException } from '../exception/appException.exception.js';
 
 type IJwtPayload = {
   id: string;
@@ -11,7 +11,7 @@ type IJwtPayload = {
 };
 
 @Injectable()
-export class AuthJwtService {
+export class JwtLibService {
   constructor(private readonly jwtService: JwtService) {}
 
   // 🔐 VERIFY TOKEN
@@ -98,3 +98,11 @@ export class AuthJwtService {
     }
   }
 }
+
+@Module({
+  imports: [JwtModule.register({})],
+  controllers: [],
+  providers: [JwtLibService],
+  exports: [JwtLibService],
+})
+export class JwtLibModule {}

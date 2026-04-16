@@ -8,9 +8,9 @@ import { appConfig } from '../../config/appConfig.js';
 import { AppException } from '../../exception/appException.exception.js';
 import { AppResponse } from '../../lib/appResponse.lib.js';
 import { EmailLibService } from '../../lib/email.lib.js';
+import { JwtLibService } from '../../lib/jwt.lib.js';
 import { TokenModel, TokenType } from '../../model/token.model.js';
 import { UserModel } from '../../model/user.model.js';
-import { AuthJwtService } from './authJwt.service.js';
 import { SigninInputDto } from './dto/signin.input.dto.js';
 import { SignupInputDto } from './dto/signup.input.dto.js';
 import { VerifyInputDto } from './dto/verify.input.dto.js';
@@ -23,7 +23,7 @@ export class AuthService {
     @InjectModel(TokenModel.name) private tokenModel: Model<TokenModel>,
 
     private readonly emailLibService: EmailLibService,
-    private readonly authJwtService: AuthJwtService
+    private readonly jwtLibService: JwtLibService
   ) {}
 
   async signup(signupInputDto: SignupInputDto): Promise<AppResponse> {
@@ -52,7 +52,7 @@ export class AuthService {
       phoneNumber: signupInputDto.phoneNumber,
     });
 
-    const verifyToken = await this.authJwtService.encodeVerifyToken({ id: newUser.id });
+    const verifyToken = await this.jwtLibService.encodeVerifyToken({ id: newUser.id });
 
     await this.tokenModel.create({
       user: newUser._id,
@@ -86,7 +86,7 @@ export class AuthService {
       });
     }
 
-    const verifyToken = await this.authJwtService.encodeVerifyToken({ id: user.id });
+    const verifyToken = await this.jwtLibService.encodeVerifyToken({ id: user.id });
 
     const currentTimeStamp = new Date();
 
@@ -113,7 +113,7 @@ export class AuthService {
   }
 
   async verify(verifyInputDto: VerifyInputDto): Promise<AppResponse> {
-    const verifyTokenDecoded = await this.authJwtService.decodeVerifyToken(verifyInputDto.verifyToken);
+    const verifyTokenDecoded = await this.jwtLibService.decodeVerifyToken(verifyInputDto.verifyToken);
 
     const matchExistingToken = await this.tokenModel.findOne({
       user: new Types.ObjectId(verifyTokenDecoded.id),
@@ -178,8 +178,8 @@ export class AuthService {
       });
     }
 
-    const accessToken = await this.authJwtService.encodeAccessToken({ id: user.id });
-    const refreshToken = await this.authJwtService.encodeRefreshToken({ id: user.id });
+    const accessToken = await this.jwtLibService.encodeAccessToken({ id: user.id });
+    const refreshToken = await this.jwtLibService.encodeRefreshToken({ id: user.id });
 
     return {
       success: true,
