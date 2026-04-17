@@ -11,8 +11,8 @@ enum TokenFormat {
 
 @Injectable()
 export class CryptographyLibService {
-  private readonly algorithm = 'aes-256-cbc';
-  private readonly ivLength = 16;
+  private readonly algorithm = 'aes-256-gcm';
+  private readonly ivLength = 12;
 
   private generateToken(format: TokenFormat, length: number): string {
     switch (format) {
@@ -26,9 +26,24 @@ export class CryptographyLibService {
           .join('');
       case TokenFormat.ALPHANUMERIC: {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        return Array.from(randomBytes(length))
-          .map((b) => chars[b % chars.length])
-          .join('');
+        const charsLength = chars.length; // 62
+        const maxValidByte = Math.floor(256 / charsLength) * charsLength; // 248
+
+        let token = '';
+
+        while (token.length < length) {
+          const bytes = randomBytes(length);
+
+          for (const b of bytes) {
+            if (b >= maxValidByte) continue;
+
+            token += chars[b % charsLength];
+
+            if (token.length === length) break;
+          }
+        }
+
+        return token;
       }
     }
   }
@@ -39,9 +54,9 @@ export class CryptographyLibService {
       const cipher = createCipheriv(this.algorithm, Buffer.from(secret, 'hex'), iv);
 
       const encrypted = Buffer.concat([cipher.update(payload, 'utf8'), cipher.final()]);
+      const authTag = cipher.getAuthTag();
 
-      // Prepend IV to encrypted data so we can use it during decryption
-      return `${iv.toString('hex')}.${encrypted.toString('hex')}`;
+      return `${iv.toString('hex')}.${encrypted.toString('hex')}.${authTag.toString('hex')}`;
     } catch (error) {
       throw new AppException({ message: 'Token encryption failed', error: {} }, HttpStatus.INTERNAL_SERVER_ERROR, {
         cause: error,
@@ -52,12 +67,14 @@ export class CryptographyLibService {
 
   private decryptToken(encryptedToken: string, secret: string): string {
     try {
-      const [ivHex, encryptedHex] = encryptedToken.split('.');
+      const [ivHex, encryptedHex, authTagHex] = encryptedToken.split('.');
 
       const iv = Buffer.from(ivHex, 'hex');
       const encrypted = Buffer.from(encryptedHex, 'hex');
+      const authTag = Buffer.from(authTagHex, 'hex');
 
       const decipher = createDecipheriv(this.algorithm, Buffer.from(secret, 'hex'), iv);
+      decipher.setAuthTag(authTag);
 
       const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
       return decrypted.toString('utf8');
@@ -71,7 +88,6 @@ export class CryptographyLibService {
 
   public generateEncryptedVerifyToken(userId: string, secret: string): string {
     const token = this.generateToken(TokenFormat.HEX, 32);
-    console.log({ token });
     return this.encryptToken(`${token}.${userId}`, secret);
   }
 
