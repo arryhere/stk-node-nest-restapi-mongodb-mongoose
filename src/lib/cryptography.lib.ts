@@ -10,7 +10,7 @@ export class CryptographyLibService {
   private readonly algorithm = 'aes-256-cbc';
   private readonly ivLength = 16;
 
-  generateToken(format: TokenFormat, length: number): string {
+  private generateToken(format: TokenFormat, length: number): string {
     switch (format) {
       case 'hex':
         return randomBytes(Math.ceil(length / 2))
@@ -29,7 +29,7 @@ export class CryptographyLibService {
     }
   }
 
-  encryptToken(payload: string, secret: string): string {
+  private encryptToken(payload: string, secret: string): string {
     try {
       const iv = randomBytes(this.ivLength);
       const cipher = createCipheriv(this.algorithm, Buffer.from(secret, 'hex'), iv);
@@ -44,7 +44,7 @@ export class CryptographyLibService {
     }
   }
 
-  decryptToken(encryptedToken: string, secret: string): string {
+  private decryptToken(encryptedToken: string, secret: string): string {
     try {
       const [ivHex, encryptedHex] = encryptedToken.split('.');
       const iv = Buffer.from(ivHex, 'hex');
@@ -60,22 +60,29 @@ export class CryptographyLibService {
     }
   }
 
-  getUserIdFromDecryptedToken(decryptedToken: string): string {
-    const parts = decryptedToken.split('.');
-    return parts[1]; // format is "token.userId"
-  }
-
-  generateVerifyToken(userId: string, secret: string): string {
+  public generateVerifyToken(userId: string, secret: string): string {
     const token = this.generateToken('hex', 32);
     return this.encryptToken(`${token}.${userId}`, secret);
   }
 
-  generateForgetPasswordToken(userId: string, secret: string): string {
+  public decodeVerifyToken(encryptedToken: string, secret: string): { token: string; userId: string } {
+    const decrypted = this.decryptToken(encryptedToken, secret);
+    const [token, userId] = decrypted.split('.');
+    return { token, userId };
+  }
+
+  public generateForgetPasswordToken(userId: string, secret: string): string {
     const token = this.generateToken('hex', 32);
     return this.encryptToken(`${token}.${userId}`, secret);
   }
 
-  generateTwoFAToken(): string {
+  public decodeForgetPasswordToken(encryptedToken: string, secret: string): { token: string; userId: string } {
+    const decrypted = this.decryptToken(encryptedToken, secret);
+    const [token, userId] = decrypted.split('.');
+    return { token, userId };
+  }
+
+  public generateTwoFAToken(): string {
     return this.generateToken('numeric', 6);
   }
 }

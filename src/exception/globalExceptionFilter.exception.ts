@@ -10,7 +10,7 @@ import { AppException } from './appException.exception.js';
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
-    // console.error('[GlobalExceptionFilter]: ', exception);
+    console.error('[GlobalExceptionFilter]: ', exception);
 
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();

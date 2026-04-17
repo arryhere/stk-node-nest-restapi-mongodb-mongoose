@@ -117,12 +117,12 @@ export class AuthService {
   }
 
   async verify(verifyInputDto: VerifyInputDto): Promise<TAppResponse> {
-    const verifyTokenDecoded = this.cryptographyLibService.decryptToken(
+    const verifyTokenDecoded = this.cryptographyLibService.decodeVerifyToken(
       verifyInputDto.verifyToken,
       appConfig.tokenSecret.VERIFY_TOKEN_SECRET
     );
 
-    const userId = this.cryptographyLibService.getUserIdFromDecryptedToken(verifyTokenDecoded);
+    const userId = verifyTokenDecoded.userId;
 
     const existingToken = await this.tokenModel.findOne({
       user: new Types.ObjectId(userId),
