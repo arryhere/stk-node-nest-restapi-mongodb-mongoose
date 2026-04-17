@@ -24,12 +24,11 @@ export class EmailLibService {
 
       const { accepted, envelope, messageId, response } = res;
 
-      console.log('[EmailService] - sendEmail - log:', { accepted, envelope, messageId, response });
+      console.log('[EmailService] > sendEmail:', { accepted, envelope, messageId, response });
     } catch (error: unknown) {
-      console.error('[EmailService] - sendEmail - error:', error);
-      throw new AppException({ message: 'Fail to send email', error: error }, HttpStatus.INTERNAL_SERVER_ERROR, {
+      throw new AppException({ message: 'Fail to send email', error: {} }, HttpStatus.INTERNAL_SERVER_ERROR, {
         cause: error,
-        description: '[EmailService] - sendEmail - error',
+        description: 'sendEmail',
       });
     }
   }

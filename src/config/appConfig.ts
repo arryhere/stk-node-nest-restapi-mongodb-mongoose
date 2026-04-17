@@ -13,11 +13,15 @@ export const appConfig = {
     MONGODB_URI: env.get('MONGODB_URI').required().asString(),
   },
 
-  jwt: {
+  bcrypt: {
+    BCRYPT_SALT_COST_FACTOR: env.get('BCRYPT_SALT_COST_FACTOR').required().asIntPositive(),
+  },
+
+  tokenSecret: {
     JWT_ACCESS_TOKEN_SECRET: env.get('JWT_ACCESS_TOKEN_SECRET').required().asString(),
     JWT_REFRESH_TOKEN_SECRET: env.get('JWT_REFRESH_TOKEN_SECRET').required().asString(),
-    JWT_VERIFY_TOKEN_SECRET: env.get('JWT_VERIFY_TOKEN_SECRET').required().asString(),
-    JWT_FORGOT_PASSWORD_TOKEN_SECRET: env.get('JWT_FORGOT_PASSWORD_TOKEN_SECRET').required().asString(),
+    VERIFY_TOKEN_SECRET: env.get('VERIFY_TOKEN_SECRET').required().asString(),
+    FORGOT_PASSWORD_TOKEN_SECRET: env.get('FORGOT_PASSWORD_TOKEN_SECRET').required().asString(),
   },
 
   tokenExpiration: {

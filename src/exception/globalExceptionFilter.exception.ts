@@ -3,12 +3,14 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, NotFoundException } from '@nestjs/common';
 import { Response } from 'express';
 
+import { appConfig } from '../config/appConfig.js';
+import { TAppEnv } from '../type/appEnv.type.js';
 import { AppException } from './appException.exception.js';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
-    console.error('[GlobalExceptionFilter]: ', exception);
+    // console.error('[GlobalExceptionFilter]: ', exception);
 
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -20,6 +22,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         statusCode: exception.getStatus(),
         message: exception.message,
         error: (exception.getResponse() as { message: string; error: unknown }).error,
+        errorCause: appConfig.app.APP_ENV !== TAppEnv.PROD ? exception.cause : undefined,
       });
     }
 

@@ -18,7 +18,7 @@ export class TokenModel {
   user: UserModel;
 
   @Prop({ type: String, required: true })
-  token: string;
+  tokenHash: string;
 
   @Prop({ type: String, enum: Object.values(TokenType), required: true })
   tokenType: TokenType;

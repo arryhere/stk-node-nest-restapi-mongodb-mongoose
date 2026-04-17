@@ -6,6 +6,7 @@ import { Model, Types } from 'mongoose';
 
 import { appConfig } from '../../config/appConfig.js';
 import { AppException } from '../../exception/appException.exception.js';
+import { CryptographyLibService } from '../../lib/cryptography.lib.js';
 import { EmailLibService } from '../../lib/email.lib.js';
 import { JwtLibService } from '../../lib/jwt.lib.js';
 import { TokenModel, TokenType } from '../../model/token.model.js';
@@ -23,7 +24,8 @@ export class AuthService {
     @InjectModel(TokenModel.name) private readonly tokenModel: Model<TokenModel>,
 
     private readonly jwtLibService: JwtLibService,
-    private readonly emailLibService: EmailLibService
+    private readonly emailLibService: EmailLibService,
+    private readonly cryptographyLibService: CryptographyLibService
   ) {}
 
   async signup(signupInputDto: SignupInputDto): Promise<TAppResponse> {
@@ -41,7 +43,7 @@ export class AuthService {
         description: 'signup',
       });
 
-    const passwordHash = await bcryptjs.hash(signupInputDto.password, 10);
+    const passwordHash = await bcryptjs.hash(signupInputDto.password, appConfig.bcrypt.BCRYPT_SALT_COST_FACTOR);
 
     const newUser = await this.userModel.create({
       firstName: signupInputDto.firstName,
@@ -52,11 +54,12 @@ export class AuthService {
       phoneNumber: signupInputDto.phoneNumber,
     });
 
-    const verifyToken = await this.jwtLibService.encodeVerifyToken({ id: newUser.id });
+    const verifyToken = this.cryptographyLibService.generateVerifyToken(newUser.id, appConfig.tokenSecret.VERIFY_TOKEN_SECRET);
+    const verifyTokenHash = await bcryptjs.hash(verifyToken, appConfig.bcrypt.BCRYPT_SALT_COST_FACTOR);
 
     await this.tokenModel.create({
       user: newUser._id,
-      token: verifyToken,
+      tokenHash: verifyTokenHash,
       tokenType: TokenType.VERIFY_TOKEN,
       expireAt: addSeconds(new Date(), appConfig.tokenExpiration.VERIFY_TOKEN_EXPIRATION),
     });
@@ -86,7 +89,8 @@ export class AuthService {
       });
     }
 
-    const verifyToken = await this.jwtLibService.encodeVerifyToken({ id: user.id });
+    const verifyToken = this.cryptographyLibService.generateVerifyToken(user.id, appConfig.tokenSecret.VERIFY_TOKEN_SECRET);
+    const verifyTokenHash = await bcryptjs.hash(verifyToken, appConfig.bcrypt.BCRYPT_SALT_COST_FACTOR);
 
     const currentTimeStamp = new Date();
 
@@ -94,7 +98,7 @@ export class AuthService {
       { user: user._id, tokenType: TokenType.VERIFY_TOKEN },
       {
         $set: {
-          token: verifyToken,
+          tokenHash: verifyTokenHash,
           issuedAt: currentTimeStamp,
           expireAt: addSeconds(currentTimeStamp, appConfig.tokenExpiration.VERIFY_TOKEN_EXPIRATION),
         },
@@ -113,21 +117,34 @@ export class AuthService {
   }
 
   async verify(verifyInputDto: VerifyInputDto): Promise<TAppResponse> {
-    const verifyTokenDecoded = await this.jwtLibService.decodeVerifyToken(verifyInputDto.verifyToken);
+    const verifyTokenDecoded = this.cryptographyLibService.decryptToken(
+      verifyInputDto.verifyToken,
+      appConfig.tokenSecret.VERIFY_TOKEN_SECRET
+    );
 
-    const matchExistingToken = await this.tokenModel.findOne({
-      user: new Types.ObjectId(verifyTokenDecoded.id),
-      token: verifyInputDto.verifyToken,
+    const userId = this.cryptographyLibService.getUserIdFromDecryptedToken(verifyTokenDecoded);
+
+    const existingToken = await this.tokenModel.findOne({
+      user: new Types.ObjectId(userId),
       tokenType: TokenType.VERIFY_TOKEN,
     });
 
-    if (!matchExistingToken)
-      throw new AppException({ message: 'Invalid Verify Token', error: {} }, HttpStatus.BAD_REQUEST, {
+    if (!existingToken)
+      throw new AppException({ message: 'Verify Token does not exist', error: {} }, HttpStatus.BAD_REQUEST, {
         cause: {},
         description: 'verify',
       });
 
-    const updatedUser = await this.userModel.findByIdAndUpdate(verifyTokenDecoded.id, { verified: true }, { new: true });
+    const tokenCompare = await bcryptjs.compare(verifyInputDto.verifyToken, existingToken.tokenHash);
+
+    if (!tokenCompare) {
+      throw new AppException({ message: 'Invalid Verify Token', error: {} }, HttpStatus.BAD_REQUEST, {
+        cause: {},
+        description: 'verify',
+      });
+    }
+
+    const updatedUser = await this.userModel.findByIdAndUpdate(userId, { verified: true }, { new: true });
 
     if (!updatedUser)
       throw new AppException({ message: 'User not found', error: {} }, HttpStatus.BAD_REQUEST, {
@@ -135,7 +152,7 @@ export class AuthService {
         description: 'verify',
       });
 
-    await this.tokenModel.deleteOne({ _id: matchExistingToken._id });
+    await this.tokenModel.deleteOne({ _id: existingToken._id });
 
     return {
       success: true,
