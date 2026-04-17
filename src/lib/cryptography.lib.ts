@@ -3,7 +3,11 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 
 import { AppException } from '../exception/appException.exception.js';
 
-type TokenFormat = 'hex' | 'numeric' | 'alphanumeric';
+enum TokenFormat {
+  HEX = 'hex',
+  NUMERIC = 'numeric',
+  ALPHANUMERIC = 'alphanumeric',
+}
 
 @Injectable()
 export class CryptographyLibService {
@@ -12,15 +16,15 @@ export class CryptographyLibService {
 
   private generateToken(format: TokenFormat, length: number): string {
     switch (format) {
-      case 'hex':
+      case TokenFormat.HEX:
         return randomBytes(Math.ceil(length / 2))
           .toString('hex')
           .slice(0, length);
-      case 'numeric':
+      case TokenFormat.NUMERIC:
         return Array.from(randomBytes(length))
           .map((b) => b % 10)
           .join('');
-      case 'alphanumeric': {
+      case TokenFormat.ALPHANUMERIC: {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         return Array.from(randomBytes(length))
           .map((b) => chars[b % chars.length])
@@ -66,7 +70,8 @@ export class CryptographyLibService {
   }
 
   public generateEncryptedVerifyToken(userId: string, secret: string): string {
-    const token = this.generateToken('hex', 32);
+    const token = this.generateToken(TokenFormat.HEX, 32);
+    console.log({ token });
     return this.encryptToken(`${token}.${userId}`, secret);
   }
 
@@ -77,7 +82,7 @@ export class CryptographyLibService {
   }
 
   public generateEncryptedForgetPasswordToken(userId: string, secret: string): string {
-    const token = this.generateToken('hex', 32);
+    const token = this.generateToken(TokenFormat.HEX, 32);
     return this.encryptToken(`${token}.${userId}`, secret);
   }
 
@@ -88,7 +93,7 @@ export class CryptographyLibService {
   }
 
   public generateTwoFAToken(): string {
-    return this.generateToken('numeric', 6);
+    return this.generateToken(TokenFormat.NUMERIC, 6);
   }
 }
 

@@ -129,3 +129,49 @@ export class CryptographyLibService {
   exports: [CryptographyLibService],
 })
 export class CryptographyLibModule {}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+generateSecureAlphanumeric(length: number): string {
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+  const charsLength = chars.length; // 62
+
+  const maxValidByte = Math.floor(256 / charsLength) * charsLength;
+  // 248
+
+  let token = '';
+
+  while (token.length < length) {
+    const bytes = randomBytes(length);
+
+    for (const b of bytes) {
+      if (b >= maxValidByte) {
+        continue; // reject biased values
+      }
+
+      token += chars[b % charsLength];
+
+      if (token.length === length) {
+        break;
+      }
+    }
+  }
+
+  return token;
+}
