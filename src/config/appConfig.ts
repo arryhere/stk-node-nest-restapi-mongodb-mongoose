@@ -1,8 +1,10 @@
 import env from 'env-var';
 
+import { TAppEnv } from '../type/appEnv.type.js';
+
 export const appConfig = {
   app: {
-    APP_ENV: env.get('APP_ENV').required().asString(),
+    APP_ENV: env.get('APP_ENV').required().asEnum(Object.values(TAppEnv)),
     APP_HOST: env.get('APP_HOST').required().asString(),
     APP_PORT: env.get('APP_PORT').required().asPortNumber(),
   },
