@@ -33,7 +33,9 @@ export class CryptographyLibService {
     try {
       const iv = randomBytes(this.ivLength);
       const cipher = createCipheriv(this.algorithm, Buffer.from(secret, 'hex'), iv);
+
       const encrypted = Buffer.concat([cipher.update(payload, 'utf8'), cipher.final()]);
+
       // Prepend IV to encrypted data so we can use it during decryption
       return `${iv.toString('hex')}.${encrypted.toString('hex')}`;
     } catch (error) {
@@ -47,9 +49,12 @@ export class CryptographyLibService {
   private decryptToken(encryptedToken: string, secret: string): string {
     try {
       const [ivHex, encryptedHex] = encryptedToken.split('.');
+
       const iv = Buffer.from(ivHex, 'hex');
       const encrypted = Buffer.from(encryptedHex, 'hex');
+
       const decipher = createDecipheriv(this.algorithm, Buffer.from(secret, 'hex'), iv);
+
       const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
       return decrypted.toString('utf8');
     } catch (error) {
@@ -60,23 +65,23 @@ export class CryptographyLibService {
     }
   }
 
-  public generateVerifyToken(userId: string, secret: string): string {
+  public generateEncryptedVerifyToken(userId: string, secret: string): string {
     const token = this.generateToken('hex', 32);
     return this.encryptToken(`${token}.${userId}`, secret);
   }
 
-  public decodeVerifyToken(encryptedToken: string, secret: string): { token: string; userId: string } {
+  public decodeEncryptedVerifyToken(encryptedToken: string, secret: string): { token: string; userId: string } {
     const decrypted = this.decryptToken(encryptedToken, secret);
     const [token, userId] = decrypted.split('.');
     return { token, userId };
   }
 
-  public generateForgetPasswordToken(userId: string, secret: string): string {
+  public generateEncryptedForgetPasswordToken(userId: string, secret: string): string {
     const token = this.generateToken('hex', 32);
     return this.encryptToken(`${token}.${userId}`, secret);
   }
 
-  public decodeForgetPasswordToken(encryptedToken: string, secret: string): { token: string; userId: string } {
+  public decodeEncryptedForgetPasswordToken(encryptedToken: string, secret: string): { token: string; userId: string } {
     const decrypted = this.decryptToken(encryptedToken, secret);
     const [token, userId] = decrypted.split('.');
     return { token, userId };

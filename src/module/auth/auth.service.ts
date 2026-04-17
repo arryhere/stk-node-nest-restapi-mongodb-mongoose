@@ -54,7 +54,7 @@ export class AuthService {
       phoneNumber: signupInputDto.phoneNumber,
     });
 
-    const verifyToken = this.cryptographyLibService.generateVerifyToken(newUser.id, appConfig.tokenSecret.VERIFY_TOKEN_SECRET);
+    const verifyToken = this.cryptographyLibService.generateEncryptedVerifyToken(newUser.id, appConfig.tokenSecret.VERIFY_TOKEN_SECRET);
     const verifyTokenHash = await bcryptjs.hash(verifyToken, appConfig.bcrypt.BCRYPT_SALT_COST_FACTOR);
 
     await this.tokenModel.create({
@@ -89,7 +89,7 @@ export class AuthService {
       });
     }
 
-    const verifyToken = this.cryptographyLibService.generateVerifyToken(user.id, appConfig.tokenSecret.VERIFY_TOKEN_SECRET);
+    const verifyToken = this.cryptographyLibService.generateEncryptedVerifyToken(user.id, appConfig.tokenSecret.VERIFY_TOKEN_SECRET);
     const verifyTokenHash = await bcryptjs.hash(verifyToken, appConfig.bcrypt.BCRYPT_SALT_COST_FACTOR);
 
     const currentTimeStamp = new Date();
@@ -117,7 +117,7 @@ export class AuthService {
   }
 
   async verify(verifyInputDto: VerifyInputDto): Promise<TAppResponse> {
-    const verifyTokenDecoded = this.cryptographyLibService.decodeVerifyToken(
+    const verifyTokenDecoded = this.cryptographyLibService.decodeEncryptedVerifyToken(
       verifyInputDto.verifyToken,
       appConfig.tokenSecret.VERIFY_TOKEN_SECRET
     );
