@@ -3,12 +3,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 
 import { appConfig } from '../config/appConfig.js';
 import { AppException } from '../exception/appException.exception.js';
-
-type TJwtPayload = {
-  id: string;
-  iat?: number;
-  exp?: number;
-};
+import { TJwtPayload } from '../type/jwtPayload.type.js';
 
 @Injectable()
 export class JwtLibService {

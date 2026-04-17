@@ -10,5 +10,6 @@ import { AuthService } from './auth.service.js';
   imports: [JwtLibModule, EmailLibModule, CryptographyLibModule],
   controllers: [AuthController],
   providers: [AuthService],
+  exports: [],
 })
 export class AuthModule {}
