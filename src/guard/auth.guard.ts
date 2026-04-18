@@ -6,11 +6,11 @@ import { Model } from 'mongoose';
 import { AppException } from '../exception/appException.exception.js';
 import { JwtLibService } from '../lib/jwt.lib.js';
 import { UserModel } from '../model/user.model.js';
-import { UserLeanType } from '../type/userLean.type.js';
+import { CurrentUserType } from '../type/currentUser.type.js';
 
 declare module 'express-serve-static-core' {
   interface Request {
-    user: UserLeanType;
+    user: CurrentUserType;
   }
 }
 
@@ -41,7 +41,7 @@ export class AuthGuard implements CanActivate {
     const user = (await this.userModel
       .findById(payload.id)
       .lean()
-      .select({ passwordHash: 0, __v: 0, createdAt: 0, updatedAt: 0 })) as UserLeanType;
+      .select({ passwordHash: 0, __v: 0, createdAt: 0, updatedAt: 0 })) as CurrentUserType;
 
     if (!user) {
       throw new AppException({ message: 'Invalid Access Token', error: {} }, HttpStatus.UNAUTHORIZED, {
