@@ -3,7 +3,7 @@
   "sourceMaps": true,
   "minify": false,
   "module": {
-    "type": "es6",
+    "type": "nodenext",
     "strict": false,
     "strictMode": true,
     "lazy": false,
