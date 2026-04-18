@@ -1,19 +1,26 @@
 import { CanActivate, ExecutionContext, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { Request } from 'express';
+import { Model } from 'mongoose';
 
 import { AppException } from '../exception/appException.exception.js';
 import { JwtLibService } from '../lib/jwt.lib.js';
-import { TJwtPayload } from '../type/jwtPayload.type.js';
+import { UserModel } from '../model/user.model.js';
+import { UserLeanType } from '../type/userLean.type.js';
 
 declare module 'express-serve-static-core' {
   interface Request {
-    user: TJwtPayload;
+    user: UserLeanType;
   }
 }
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly jwtLibService: JwtLibService) {}
+  constructor(
+    @InjectModel(UserModel.name) private readonly userModel: Model<UserModel>,
+
+    private readonly jwtLibService: JwtLibService
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const ctx = context.switchToHttp();
@@ -31,7 +38,33 @@ export class AuthGuard implements CanActivate {
 
     const payload = await this.jwtLibService.decodeAccessToken(validToken);
 
-    request.user = payload;
+    const user = (await this.userModel
+      .findById(payload.id)
+      .lean()
+      .select({ passwordHash: 0, __v: 0, createdAt: 0, updatedAt: 0 })) as UserLeanType;
+
+    if (!user) {
+      throw new AppException({ message: 'Invalid Access Token', error: {} }, HttpStatus.UNAUTHORIZED, {
+        cause: { userId: payload.id },
+        description: 'AuthGuard',
+      });
+    }
+
+    if (!user.verified) {
+      throw new AppException({ message: 'User not verified', error: {} }, HttpStatus.UNAUTHORIZED, {
+        cause: { userId: payload.id },
+        description: 'AuthGuard',
+      });
+    }
+
+    if (!user.active) {
+      throw new AppException({ message: 'User not active', error: {} }, HttpStatus.UNAUTHORIZED, {
+        cause: { userId: payload.id },
+        description: 'AuthGuard',
+      });
+    }
+
+    request.user = user;
 
     return true;
   }

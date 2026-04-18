@@ -1,6 +1,6 @@
 import { IsBoolean, IsInt, IsObject, IsString } from 'class-validator';
 
-export class TAppResponse {
+export class AppResponseDto {
   @IsBoolean()
   success: boolean;
 

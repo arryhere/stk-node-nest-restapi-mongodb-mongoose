@@ -4,7 +4,7 @@ import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, NotFoundException } 
 import { Response } from 'express';
 
 import { appConfig } from '../config/appConfig.js';
-import { TAppEnv } from '../type/appEnv.type.js';
+import { AppEnvEnum } from '../type/appEnv.enum.js';
 import { AppException } from './appException.exception.js';
 
 @Catch()
@@ -22,7 +22,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         statusCode: exception.getStatus(),
         message: exception.message,
         error: (exception.getResponse() as { message: string; error: unknown }).error,
-        errorCause: appConfig.app.APP_ENV !== TAppEnv.PROD ? exception.cause : undefined,
+        errorCause: appConfig.app.APP_ENV !== AppEnvEnum.PROD ? exception.cause : undefined,
       });
     }
 

@@ -2,7 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
-export enum Role {
+export enum RoleEnum {
   ADMIN = 'ADMIN',
   USER = 'USER',
 }
@@ -35,8 +35,8 @@ export class UserModel {
   @Prop({ type: Boolean, default: true })
   active: boolean;
 
-  @Prop({ type: String, enum: Object.values(Role), default: Role.USER })
-  role: Role;
+  @Prop({ type: String, enum: Object.values(RoleEnum), default: RoleEnum.USER })
+  role: RoleEnum;
 
   createdAt: Date; // auto generated as timestamps: true
 

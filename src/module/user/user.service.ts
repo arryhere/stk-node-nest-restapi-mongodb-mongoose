@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
 
-import { TAppResponse } from '../../type/appResponse.type.js';
+import { AppResponseDto } from '../../type/appResponse.dto.js';
+import { UserLeanType } from '../../type/userLean.type.js';
 
 @Injectable()
 export class UserService {
-  async getProfile(): Promise<TAppResponse> {
+  async getProfile(user: UserLeanType): Promise<AppResponseDto> {
     return {
       success: true,
       message: 'Profile fetched successfully',
       statusCode: 200,
-      data: {},
+      data: user,
     };
   }
 }

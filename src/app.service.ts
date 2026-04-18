@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
-import { TAppResponse } from './type/appResponse.type.js';
+import { AppResponseDto } from './type/appResponse.dto.js';
 
 @Injectable()
 export class AppService {
-  async getBase(): Promise<TAppResponse> {
+  async getBase(): Promise<AppResponseDto> {
     return { success: true, statusCode: 200, message: 'Base endpoint', data: {} };
   }
 }

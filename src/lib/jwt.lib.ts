@@ -3,21 +3,22 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 
 import { appConfig } from '../config/appConfig.js';
 import { AppException } from '../exception/appException.exception.js';
-import { TJwtPayload } from '../type/jwtPayload.type.js';
+import { RoleEnum } from '../model/user.model.js';
+import { JwtAccessTokenPayloadType, JwtRefreshTokenPayloadType } from '../type/jwtPayload.type.js';
 
 @Injectable()
 export class JwtLibService {
   constructor(private readonly jwtService: JwtService) {}
 
   // 🔑 ACCESS TOKEN
-  async encodeAccessToken(payload: { id: string }): Promise<string> {
+  async encodeAccessToken(payload: { id: string; role: RoleEnum }): Promise<string> {
     return await this.jwtService.signAsync(payload, {
       secret: appConfig.tokenSecret.JWT_ACCESS_TOKEN_SECRET,
       expiresIn: appConfig.tokenExpiration.ACCESS_TOKEN_EXPIRATION,
     });
   }
 
-  async decodeAccessToken(token: string): Promise<TJwtPayload> {
+  async decodeAccessToken(token: string): Promise<JwtAccessTokenPayloadType> {
     try {
       return await this.jwtService.verifyAsync(token, {
         secret: appConfig.tokenSecret.JWT_ACCESS_TOKEN_SECRET,
@@ -38,7 +39,7 @@ export class JwtLibService {
     });
   }
 
-  async decodeRefreshToken(token: string): Promise<TJwtPayload> {
+  async decodeRefreshToken(token: string): Promise<JwtRefreshTokenPayloadType> {
     try {
       return await this.jwtService.verifyAsync(token, {
         secret: appConfig.tokenSecret.JWT_REFRESH_TOKEN_SECRET,

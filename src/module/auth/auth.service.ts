@@ -9,9 +9,9 @@ import { AppException } from '../../exception/appException.exception.js';
 import { CryptographyLibService } from '../../lib/cryptography.lib.js';
 import { EmailLibService } from '../../lib/email.lib.js';
 import { JwtLibService } from '../../lib/jwt.lib.js';
-import { TokenModel, TokenType } from '../../model/token.model.js';
+import { TokenModel, TokenTypeEnum } from '../../model/token.model.js';
 import { UserModel } from '../../model/user.model.js';
-import { TAppResponse } from '../../type/appResponse.type.js';
+import { AppResponseDto } from '../../type/appResponse.dto.js';
 import { SigninInputDto } from './dto/signin.input.dto.js';
 import { SignupInputDto } from './dto/signup.input.dto.js';
 import { VerifyInputDto } from './dto/verify.input.dto.js';
@@ -28,7 +28,7 @@ export class AuthService {
     private readonly cryptographyLibService: CryptographyLibService
   ) {}
 
-  async signup(signupInputDto: SignupInputDto): Promise<TAppResponse> {
+  async signup(signupInputDto: SignupInputDto): Promise<AppResponseDto> {
     const emailExist = await this.userModel.findOne({ email: signupInputDto.email });
     if (emailExist)
       throw new AppException({ message: 'Email already exist', error: {} }, HttpStatus.BAD_REQUEST, {
@@ -60,7 +60,7 @@ export class AuthService {
     await this.tokenModel.create({
       user: newUser._id,
       tokenHash: verifyTokenHash,
-      tokenType: TokenType.VERIFY_TOKEN,
+      tokenType: TokenTypeEnum.VERIFY_TOKEN,
       expireAt: addSeconds(new Date(), appConfig.tokenExpiration.VERIFY_TOKEN_EXPIRATION),
     });
 
@@ -74,7 +74,7 @@ export class AuthService {
     };
   }
 
-  async verifyLink(verifyLinkInputDto: VerifyLinkInputDto): Promise<TAppResponse> {
+  async verifyLink(verifyLinkInputDto: VerifyLinkInputDto): Promise<AppResponseDto> {
     const user = await this.userModel.findOne({ email: verifyLinkInputDto.email });
 
     if (!user)
@@ -95,7 +95,7 @@ export class AuthService {
     const currentTimeStamp = new Date();
 
     await this.tokenModel.updateOne(
-      { user: user._id, tokenType: TokenType.VERIFY_TOKEN },
+      { user: user._id, tokenType: TokenTypeEnum.VERIFY_TOKEN },
       {
         $set: {
           tokenHash: verifyTokenHash,
@@ -116,7 +116,7 @@ export class AuthService {
     };
   }
 
-  async verify(verifyInputDto: VerifyInputDto): Promise<TAppResponse> {
+  async verify(verifyInputDto: VerifyInputDto): Promise<AppResponseDto> {
     const verifyTokenDecoded = this.cryptographyLibService.decodeEncryptedVerifyToken(
       verifyInputDto.verifyToken,
       appConfig.tokenSecret.VERIFY_TOKEN_SECRET
@@ -126,7 +126,7 @@ export class AuthService {
 
     const existingToken = await this.tokenModel.findOne({
       user: new Types.ObjectId(userId),
-      tokenType: TokenType.VERIFY_TOKEN,
+      tokenType: TokenTypeEnum.VERIFY_TOKEN,
     });
 
     if (!existingToken)
@@ -162,7 +162,7 @@ export class AuthService {
     };
   }
 
-  async signin(signinInputDto: SigninInputDto): Promise<TAppResponse> {
+  async signin(signinInputDto: SigninInputDto): Promise<AppResponseDto> {
     const user = await this.userModel.findOne({ email: signinInputDto.email });
 
     if (!user) {
@@ -195,7 +195,7 @@ export class AuthService {
       });
     }
 
-    const accessToken = await this.jwtLibService.encodeAccessToken({ id: user.id });
+    const accessToken = await this.jwtLibService.encodeAccessToken({ id: user.id, role: user.role });
     const refreshToken = await this.jwtLibService.encodeRefreshToken({ id: user.id });
 
     return {

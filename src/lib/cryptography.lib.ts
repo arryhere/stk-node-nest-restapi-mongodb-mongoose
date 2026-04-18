@@ -1,5 +1,12 @@
+/**
+ * AES-256 requires exactly 32 bytes
+ * secret length need to 32 bytes or 64 characters long
+ *
+ * SHA-256 hash is deterministic, same input - same hash, always!
+ */
+
 import { HttpStatus, Injectable, Module } from '@nestjs/common';
-import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'crypto';
 
 import { AppException } from '../exception/appException.exception.js';
 
@@ -13,6 +20,10 @@ enum TokenFormat {
 export class CryptographyLibService {
   private readonly algorithm = 'aes-256-gcm';
   private readonly ivLength = 12;
+
+  private generateHash(value: string): Buffer {
+    return createHash('sha256').update(value).digest();
+  }
 
   private generateToken(format: TokenFormat, length: number): string {
     switch (format) {

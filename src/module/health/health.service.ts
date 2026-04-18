@@ -1,10 +1,10 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 
-import { TAppResponse } from '../../type/appResponse.type.js';
+import { AppResponseDto } from '../../type/appResponse.dto.js';
 
 @Injectable()
 export class HealthService {
-  async getHealth(): Promise<TAppResponse> {
+  async getHealth(): Promise<AppResponseDto> {
     return { success: true, statusCode: HttpStatus.OK, message: 'API is healthy', data: {} };
   }
 }

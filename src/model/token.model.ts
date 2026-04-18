@@ -4,7 +4,7 @@ import { Types } from 'mongoose';
 
 import { UserModel } from './user.model.js';
 
-export enum TokenType {
+export enum TokenTypeEnum {
   VERIFY_TOKEN = 'VERIFY_TOKEN',
   FORGOT_PASSWORD_TOKEN = 'FORGOT_PASSWORD_TOKEN',
   TWO_FA_TOKEN = 'TWO_FA_TOKEN',
@@ -20,8 +20,8 @@ export class TokenModel {
   @Prop({ type: String, required: true })
   tokenHash: string;
 
-  @Prop({ type: String, enum: Object.values(TokenType), required: true })
-  tokenType: TokenType;
+  @Prop({ type: String, enum: Object.values(TokenTypeEnum), required: true })
+  tokenType: TokenTypeEnum;
 
   @Prop({ type: Date, default: Date.now })
   issuedAt: Date;

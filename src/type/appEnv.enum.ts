@@ -1,4 +1,4 @@
-export enum TAppEnv {
+export enum AppEnvEnum {
   DEV = 'dev',
   UAT = 'uat',
   PROD = 'prod',

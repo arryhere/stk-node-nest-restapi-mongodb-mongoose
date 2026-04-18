@@ -5,18 +5,18 @@ import { validateOrReject, ValidationError } from 'class-validator';
 import { Observable, switchMap } from 'rxjs';
 
 import { AppException } from '../exception/appException.exception.js';
-import { TAppResponse } from '../type/appResponse.type.js';
+import { AppResponseDto } from '../type/appResponse.dto.js';
 
 @Injectable()
 export class ResponseValidationInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler<TAppResponse>): Observable<TAppResponse> {
+  intercept(context: ExecutionContext, next: CallHandler<AppResponseDto>): Observable<AppResponseDto> {
     // const ctx = context.switchToHttp();
     // const request = ctx.getRequest();
     // const response = ctx.getResponse();
 
     return next.handle().pipe(
       switchMap(async (data) => {
-        const response = plainToInstance(TAppResponse, data);
+        const response = plainToInstance(AppResponseDto, data);
 
         try {
           await validateOrReject(response);
