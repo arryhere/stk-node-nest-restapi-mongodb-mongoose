@@ -15,8 +15,8 @@ export class UserController {
 
   @Get('getProfile')
   @HttpCode(HttpStatus.OK)
+  @RoleDecorator([RoleEnum.ADMIN])
   @UseGuards(AuthGuard, RoleGuard)
-  @RoleDecorator([RoleEnum.USER])
   async getProfile(@CurrentUserDecorator() user: CurrentUserType): Promise<AppResponseDto> {
     return await this.userService.getProfile(user);
   }

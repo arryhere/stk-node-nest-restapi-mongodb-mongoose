@@ -18,7 +18,7 @@ export class RoleGuard implements CanActivate {
 
     if (!roles.includes(request.user.role)) {
       throw new AppException({ message: 'Invalid Role', error: {} }, HttpStatus.FORBIDDEN, {
-        cause: { requiredRoles: roles, userRole: request.user.role },
+        cause: { requiredRoles: roles.join(', '), userRole: request.user.role },
         description: 'RoleGuard',
       });
     }
