@@ -15,7 +15,7 @@
     "start:debug": "nest start --env-file .env.dev --debug --watch",
     "start:prod": "node --env-file .env.prod ./dist/index.js",
     "lint": "eslint --debug --config ./eslint.config.js --fix ./src ./*.{ts,tsx,cts,mts,js,jsx,cjs,mjs}",
-    "format": "prettier --config ./prettier.config.js --write ./src ./*.{ts,tsx,cts,mts,js,jsx,cjs,mjs,json}",
+    "format": "prettier --config ./prettier.config.js --write ./src \"./*.{ts,tsx,cts,mts,js,jsx,cjs,mjs,json}\" \"!./package-lock.json\"",
     "type-check": "tsc --noEmit",
     "pre-commit": "npm run lint && npm run format && npm run type-check"
   },

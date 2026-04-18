@@ -198,11 +198,36 @@ export class AuthService {
     const accessToken = await this.jwtLibService.encodeAccessToken({ id: user.id, role: user.role });
     const refreshToken = await this.jwtLibService.encodeRefreshToken({ id: user.id });
 
+    const refreshTokenHash = this.cryptographyLibService.generateRefreshTokenHash(refreshToken);
+
+    const currentTimeStamp = new Date();
+
+    await this.tokenModel.updateOne(
+      { user: user._id, tokenType: TokenTypeEnum.REFRESH_TOKEN },
+      {
+        $set: {
+          tokenHash: refreshTokenHash,
+          issuedAt: currentTimeStamp,
+          expireAt: addSeconds(currentTimeStamp, appConfig.tokenExpiration.REFRESH_TOKEN_EXPIRATION),
+        },
+      },
+      { upsert: true }
+    );
+
     return {
       success: true,
       message: 'Signin successful',
       statusCode: HttpStatus.OK,
       data: { id: user.id, accessToken, refreshToken },
+    };
+  }
+
+  async refreshToken(): Promise<AppResponseDto> {
+    return {
+      success: true,
+      message: 'Token refreshed successfully',
+      statusCode: HttpStatus.OK,
+      data: {},
     };
   }
 }

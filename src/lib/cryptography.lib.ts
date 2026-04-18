@@ -21,8 +21,8 @@ export class CryptographyLibService {
   private readonly algorithm = 'aes-256-gcm';
   private readonly ivLength = 12;
 
-  private generateHash(value: string): Buffer {
-    return createHash('sha256').update(value).digest();
+  private generateHash(value: string): string {
+    return createHash('sha256').update(value).digest('hex');
   }
 
   private generateToken(format: TokenFormat, length: number): string {
@@ -121,6 +121,10 @@ export class CryptographyLibService {
 
   public generateTwoFAToken(): string {
     return this.generateToken(TokenFormat.NUMERIC, 6);
+  }
+
+  public generateRefreshTokenHash(token: string): string {
+    return this.generateHash(token);
   }
 }
 

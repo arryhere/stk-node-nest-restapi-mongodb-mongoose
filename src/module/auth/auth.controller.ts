@@ -33,4 +33,10 @@ export class AuthController {
   async signin(@Body() signinInputDto: SigninInputDto) {
     return await this.authService.signin(signinInputDto);
   }
+
+  @Get('refreshToken')
+  @HttpCode(HttpStatus.OK)
+  async refreshToken() {
+    return await this.authService.refreshToken();
+  }
 }

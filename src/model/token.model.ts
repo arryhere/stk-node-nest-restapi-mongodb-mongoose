@@ -8,6 +8,7 @@ export enum TokenTypeEnum {
   VERIFY_TOKEN = 'VERIFY_TOKEN',
   FORGOT_PASSWORD_TOKEN = 'FORGOT_PASSWORD_TOKEN',
   TWO_FA_TOKEN = 'TWO_FA_TOKEN',
+  REFRESH_TOKEN = 'REFRESH_TOKEN',
 }
 
 @Schema({ timestamps: true, collection: 'token' })
