@@ -12,6 +12,7 @@ import { JwtLibService } from '../../lib/jwt.lib.js';
 import { TokenModel, TokenTypeEnum } from '../../model/token.model.js';
 import { UserModel } from '../../model/user.model.js';
 import { AppResponseDto } from '../../type/appResponse.dto.js';
+import { RefreshTokenInputDto } from './dto/refreshToken.input.dto.js';
 import { SigninInputDto } from './dto/signin.input.dto.js';
 import { SignupInputDto } from './dto/signup.input.dto.js';
 import { VerifyInputDto } from './dto/verify.input.dto.js';
@@ -222,12 +223,68 @@ export class AuthService {
     };
   }
 
-  async refreshToken(): Promise<AppResponseDto> {
+  async refreshToken(refreshTokenInputDto: RefreshTokenInputDto): Promise<AppResponseDto> {
+    const refreshTokenDecoded = await this.jwtLibService.decodeRefreshToken(refreshTokenInputDto.refreshToken);
+
+    const existingRefreshToken = await this.tokenModel.findOne({
+      user: new Types.ObjectId(refreshTokenDecoded.id),
+      tokenType: TokenTypeEnum.REFRESH_TOKEN,
+    });
+
+    if (!existingRefreshToken) {
+      throw new AppException({ message: 'Refresh Token does not exist', error: {} }, HttpStatus.UNAUTHORIZED, {
+        cause: {},
+        description: 'refreshToken',
+      });
+    }
+
+    const newRefreshTokenHash = this.cryptographyLibService.generateRefreshTokenHash(refreshTokenInputDto.refreshToken);
+
+    if (existingRefreshToken.tokenHash !== newRefreshTokenHash) {
+      await this.tokenModel.deleteMany({ user: new Types.ObjectId(refreshTokenDecoded.id) });
+
+      throw new AppException({ message: 'Invalid refresh token', error: {} }, HttpStatus.UNAUTHORIZED, {
+        cause: {},
+        description: 'refreshToken',
+      });
+    }
+
+    const user = await this.userModel.findById(refreshTokenDecoded.id);
+
+    if (!user) {
+      throw new AppException({ message: 'User not found', error: {} }, HttpStatus.UNAUTHORIZED, {
+        cause: {},
+        description: 'refreshToken',
+      });
+    }
+
+    const accessToken = await this.jwtLibService.encodeAccessToken({ id: user.id, role: user.role });
+    const refreshToken = await this.jwtLibService.encodeRefreshToken({ id: user.id });
+
+    const refreshTokenHash = this.cryptographyLibService.generateRefreshTokenHash(refreshToken);
+
+    const currentTimeStamp = new Date();
+
+    await this.tokenModel.updateOne(
+      { user: user._id, tokenType: TokenTypeEnum.REFRESH_TOKEN },
+      {
+        $set: {
+          tokenHash: refreshTokenHash,
+          issuedAt: currentTimeStamp,
+          expireAt: addSeconds(currentTimeStamp, appConfig.tokenExpiration.REFRESH_TOKEN_EXPIRATION),
+        },
+      },
+      { upsert: true }
+    );
+
     return {
       success: true,
-      message: 'Token refreshed successfully',
+      message: 'Tokens refreshed successfully',
       statusCode: HttpStatus.OK,
-      data: {},
+      data: {
+        accessToken,
+        refreshToken,
+      },
     };
   }
 }
