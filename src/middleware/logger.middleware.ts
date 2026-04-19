@@ -12,24 +12,29 @@
  * Request > Middleware > Guards > Interceptors > Pipes > Controllers > Services > Interceptors > Exception Filters > Response
  */
 
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
   constructor() {}
 
+  private readonly logger = new Logger(LoggerMiddleware.name);
+
   async use(req: Request, res: Response, next: NextFunction) {
     const log = {
       method: req.method,
       url: req.originalUrl,
+      body: req.body,
       ip: req.socket.remoteAddress,
       userAgent: req.headers['user-agent'],
       authorization: req.headers['authorization'] ? 'Bearer [REDACTED]' : 'None',
       timestamp: new Date().toISOString(),
     };
 
-    console.log('\n------------------------------------------------------------\n', log);
+    console.log('\n------------------------------------------------------------------------------------------');
+    this.logger.log(log);
+
     next();
   }
 }

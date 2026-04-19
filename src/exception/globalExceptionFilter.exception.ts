@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, NotFoundException } from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Logger, NotFoundException } from '@nestjs/common';
 import { Response } from 'express';
 
 import { appConfig } from '../config/appConfig.js';
@@ -9,8 +9,10 @@ import { AppException } from './appException.exception.js';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(GlobalExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost) {
-    console.error('[GlobalExceptionFilter]: ', exception);
+    this.logger.error(exception);
 
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
