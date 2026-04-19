@@ -38,7 +38,7 @@ export class LoggerMiddleware implements NestMiddleware {
       userAgent: req.headers['user-agent'],
       authorization: req.headers['authorization'] ? 'Bearer [REDACTED]' : 'None',
       timestamp: new Date().toISOString(),
-      nonProd:
+      debugNonProd:
         appConfig.app.APP_ENV !== AppEnvEnum.PROD
           ? {
               url: req.originalUrl,

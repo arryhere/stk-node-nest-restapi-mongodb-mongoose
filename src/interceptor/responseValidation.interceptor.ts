@@ -2,7 +2,7 @@
 import { CallHandler, ExecutionContext, HttpStatus, Injectable, NestInterceptor } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject, ValidationError } from 'class-validator';
-import { Observable, switchMap } from 'rxjs';
+import { mergeMap, Observable } from 'rxjs';
 
 import { AppException } from '../exception/appException.exception.js';
 import { AppResponseDto } from '../type/appResponse.dto.js';
@@ -15,7 +15,7 @@ export class ResponseValidationInterceptor implements NestInterceptor {
     // const response = ctx.getResponse();
 
     return next.handle().pipe(
-      switchMap(async (data) => {
+      mergeMap(async (data) => {
         const response = plainToInstance(AppResponseDto, data);
 
         try {
