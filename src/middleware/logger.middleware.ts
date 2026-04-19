@@ -7,6 +7,9 @@
  *
  * if LoggerMiddleware is applied in AppModule, then it can use providers mentioned in AppModule only, not from any other module
  * if LoggerMiddleware is applied in HealthModule, then it can use providers mentioned in HealthModule only, not from any other module including AppModule
+ *
+ * req.user is not available in LoggerMiddleware because it is applied before the AuthGuard which populates req.user
+ * Request > Middleware > Guards > Interceptors > Pipes > Controllers > Services > Interceptors > Exception Filters > Response
  */
 
 import { Injectable, NestMiddleware } from '@nestjs/common';
