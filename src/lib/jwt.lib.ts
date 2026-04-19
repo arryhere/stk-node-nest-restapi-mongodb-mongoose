@@ -1,3 +1,8 @@
+/**
+ * Needs to be imported in any module this is using JwtLibService
+ * If JwtLibService is not used in the module, but the module is using AuthGuard which uses JwtLibService, then JwtLibModule still needs to be imported in that module
+ */
+
 import { HttpStatus, Injectable, Module } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 
