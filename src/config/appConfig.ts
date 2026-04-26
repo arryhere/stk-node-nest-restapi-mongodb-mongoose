@@ -7,6 +7,7 @@ export const appConfig = {
     APP_ENV: env.get('APP_ENV').required().asEnum(Object.values(AppEnvEnum)),
     APP_HOST: env.get('APP_HOST').required().asString(),
     APP_PORT: env.get('APP_PORT').required().asPortNumber(),
+    APP_RESPONSE_TIMEOUT: env.get('APP_RESPONSE_TIMEOUT').required().asIntPositive(),
   },
 
   mongodb: {

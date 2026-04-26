@@ -5,11 +5,15 @@
  * NestJS middleware is built on top of Express middleware. When you call consumer.apply(LoggerMiddleware).forRoutes('*')
  * NestJS registers it as app.use('*', LoggerMiddleware) at the Express application level — not scoped to the module.
  *
+ * Nest middleware fully supports Dependency Injection
+ * Just as with providers and controllers, they are able to inject dependencies that are available within the same module
  * if LoggerMiddleware is applied in AppModule, then it can use providers mentioned in AppModule only, not from any other module
  * if LoggerMiddleware is applied in HealthModule, then it can use providers mentioned in HealthModule only, not from any other module including AppModule
+ * if LoggerMiddleware is registered in AppModule and it wants to inject HealthService, then HealthModule must export HealthService and AppModule must import HealthModule.
  *
  * req.user is not available in LoggerMiddleware because it is applied before the AuthGuard which populates req.user
  * Request > Middleware > Guards > Interceptors > Pipes > Controllers > Services > Interceptors > Exception Filters > Response
+ *
  */
 
 import { Injectable, Logger, NestMiddleware } from '@nestjs/common';

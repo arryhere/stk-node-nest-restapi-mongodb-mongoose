@@ -6,8 +6,6 @@ import { AppModule } from './app.module.js';
 import { appConfig } from './config/appConfig.js';
 import { AppException } from './exception/appException.exception.js';
 import { GlobalExceptionFilter } from './exception/globalExceptionFilter.exception.js';
-import { ResponseValidationInterceptor } from './interceptor/responseValidation.interceptor.js';
-import { AppEnvEnum } from './type/appEnv.enum.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -26,8 +24,6 @@ async function bootstrap() {
       },
     })
   );
-
-  app.useGlobalInterceptors(...(appConfig.app.APP_ENV !== AppEnvEnum.PROD ? [new ResponseValidationInterceptor()] : []));
 
   app.useGlobalFilters(new GlobalExceptionFilter());
 
