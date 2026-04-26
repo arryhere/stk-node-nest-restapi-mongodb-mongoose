@@ -14,11 +14,11 @@ export class RoleGuard implements CanActivate {
 
     const roles = this.reflector.get(RoleDecorator, context.getHandler());
 
-    if (roles.length === 0 || !roles) return true;
+    if (!roles || !roles?.length) return true;
 
     if (!roles.includes(request.user.role)) {
       throw new AppException({ message: 'Invalid Role', error: {} }, HttpStatus.FORBIDDEN, {
-        cause: { requiredRoles: roles.join(', '), userRole: request.user.role },
+        cause: { requiredRoles: roles.join(', '), providedRole: request.user.role },
         description: 'RoleGuard',
       });
     }

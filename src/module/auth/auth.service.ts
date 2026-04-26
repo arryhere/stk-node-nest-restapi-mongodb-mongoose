@@ -243,7 +243,7 @@ export class AuthService {
     if (existingRefreshToken.tokenHash !== newRefreshTokenHash) {
       await this.tokenModel.deleteMany({ user: new Types.ObjectId(refreshTokenDecoded.id) });
 
-      throw new AppException({ message: 'Invalid refresh token', error: {} }, HttpStatus.UNAUTHORIZED, {
+      throw new AppException({ message: 'Invalid refresh token, all user tokens removed, re-authenticate', error: {} }, HttpStatus.UNAUTHORIZED, {
         cause: {},
         description: 'refreshToken',
       });

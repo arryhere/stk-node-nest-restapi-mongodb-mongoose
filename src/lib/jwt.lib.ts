@@ -29,7 +29,7 @@ export class JwtLibService {
         secret: appConfig.tokenSecret.JWT_ACCESS_TOKEN_SECRET,
       });
     } catch (error) {
-      throw new AppException({ message: 'Invalid or expired token', error: {} }, HttpStatus.UNAUTHORIZED, {
+      throw new AppException({ message: 'Invalid or expired Access token', error: {} }, HttpStatus.UNAUTHORIZED, {
         cause: error,
         description: 'decodeAccessToken',
       });
@@ -50,7 +50,7 @@ export class JwtLibService {
         secret: appConfig.tokenSecret.JWT_REFRESH_TOKEN_SECRET,
       });
     } catch (error) {
-      throw new AppException({ message: 'Invalid or expired token', error: {} }, HttpStatus.UNAUTHORIZED, {
+      throw new AppException({ message: 'Invalid or expired Refresh token', error: {} }, HttpStatus.UNAUTHORIZED, {
         cause: error,
         description: 'decodeRefreshToken',
       });
