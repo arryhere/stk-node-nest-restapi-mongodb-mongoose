@@ -1,10 +1,11 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { appConfig } from './config/appConfig.js';
+import { GlobalExceptionFilter } from './exception/globalExceptionFilter.exception.js';
 import { ResponseValidationInterceptor } from './interceptor/responseValidation.interceptor.js';
 import { TimeoutInterceptor } from './interceptor/timeout.interceptor.js';
 import { LoggerMiddleware } from './middleware/logger.middleware.js';
@@ -36,6 +37,11 @@ import { UserModule } from './module/user/user.module.js';
     {
       provide: APP_INTERCEPTOR,
       useClass: TimeoutInterceptor,
+    },
+
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter,
     },
   ],
 })
