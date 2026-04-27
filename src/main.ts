@@ -18,6 +18,11 @@ async function bootstrap() {
     maxAge: 86400, // 86400 seconds = 24 hours; tells the browser to cache the preflight response for 24 hours
   });
 
+  /**
+   * Only add CSRF if you're doing cookie/session-based auth.
+   * https://docs.nestjs.com/security/csrf
+   */
+
   if (appConfig.app.APP_ENV !== 'prod') {
     const swagger = new DocumentBuilder()
       .setTitle('Node Nest')
