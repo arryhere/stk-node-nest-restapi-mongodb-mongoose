@@ -33,6 +33,7 @@
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "env-var": "^7.5.0",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.16.1",
     "nodemailer": "^7.0.5",
